@@ -61,7 +61,7 @@ func FetchAllNotifications() {
 
 func GetNotifications(currentPage int) ([]*models.Not, error) {
 	initAniClient()
-	fmt.Println("im in get nitification",currentPage)
+	fmt.Println("im in get nitification", currentPage)
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://aniwave.to/user/notification?page=%d", currentPage), nil)
 	if err != nil {
 		fmt.Println("i got err in req")
@@ -75,7 +75,7 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	}
 	fmt.Println("i got resp")
 	for _, v := range resp.Cookies() {
-		if v.Name == "session" {
+		if v != nil && v.Name == "session" {
 			fmt.Println("🍪", v.Value)
 			myCookie = v
 		}
