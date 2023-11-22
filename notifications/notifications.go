@@ -43,7 +43,7 @@ func FetchAllNotifications() {
 		nots, err := GetNotifications(i)
 		fmt.Println("👀", len(nots))
 		if err != nil || len(nots) <= 0 {
-			fmt.Println("❌", err.Error())
+			fmt.Println("❌ Error getting nots", err)
 			continue
 		}
 		for _, v := range nots {
