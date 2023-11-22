@@ -41,7 +41,9 @@ func FetchAllNotifications() {
 	var page int = 1
 	for i := page; i <= page; i++ {
 		nots, err := GetNotifications(i)
+		fmt.Println("👀", len(nots))
 		if err != nil || len(nots) <= 0 {
+			fmt.Println("❌", err.Error())
 			continue
 		}
 		for _, v := range nots {
@@ -70,6 +72,7 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	}
 	for _, v := range resp.Cookies() {
 		if v.Name == "session" {
+			fmt.Println("🍪", v.Value)
 			myCookie = v
 		}
 	}
