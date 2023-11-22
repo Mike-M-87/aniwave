@@ -92,11 +92,13 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	for i, v := range infoDivs {
 		var infoDivXml structure.DivInfo
 		err = xml.Unmarshal([]byte(v), &infoDivXml)
+		fmt.Println("🕸️", err)
 		if err != nil {
 			continue
 		}
 		content := infoDivXml.Div.Span
 		date, err := parseRelativeTime(infoDivXml.Time)
+		fmt.Println("🕛", err)
 		if err != nil {
 			continue
 		}
