@@ -3,11 +3,11 @@ package main
 import (
 	"aniwave/notifications"
 	"aniwave/utils"
+	"os"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
-	"os"
 )
 
 var defaultPort = "8082"
@@ -32,9 +32,9 @@ func main() {
 	}))
 
 	app.Static("/", "./index.html")
-	app.Post("/done", notifications.MarkasDone)
-
-	app.All("/nots", notifications.DisplayNotifications)
+	app.Post("/done", notifications.ChangeDone)
+	app.Get("/nots", notifications.DisplayNotifications)
+	app.Get("/check", notifications.CheckNotifications)
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(418).JSON(&fiber.Map{

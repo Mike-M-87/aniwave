@@ -4,6 +4,8 @@ import (
 	"aniwave/models"
 	"aniwave/structure"
 	"aniwave/utils"
+	// "bytes"
+	// "encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -15,20 +17,21 @@ import (
 )
 
 var (
-	myCookie  *http.Cookie
-	aniClient *http.Client
-
+	myCookie          *http.Cookie
+	aniClient         *http.Client
 	duplicateKeyError = `ERROR: duplicate key value violates unique constraint "nots_pkey" (SQLSTATE 23505)`
 )
 
 func initAniClient() {
-	aniClient = &http.Client{}
-	myCookie = &http.Cookie{
-		Name:       "session",
-		Value:      "HJhP2ILDSQkIL0BIM0iCAP8EjWzRFnCrfYvGpp7e",
-		Domain:     "aniwave.to",
-		Path:       "/",
-		RawExpires: "2023-11-21T12:03:40.351Z",
+	if aniClient == nil || myCookie == nil {
+		aniClient = &http.Client{}
+		myCookie = &http.Cookie{
+			Name:       "session",
+			Value:      "HJhP2ILDSQkIL0BIM0iCAP8EjWzRFnCrfYvGpp7e",
+			Domain:     "aniwave.to",
+			Path:       "/",
+			RawExpires: "2023-11-21T12:03:40.351Z",
+		}
 	}
 }
 
@@ -42,10 +45,13 @@ func FetchAllNotifications() {
 
 		for _, v := range nots {
 			err = utils.DB.Create(v).Error
-			if err != nil && err.Error() == duplicateKeyError {
+			if err == nil {
+				SendTelegramNotification(v)
+			} else if err != nil && err.Error() == duplicateKeyError {
 				return
 			}
 		}
+
 		page++
 		time.Sleep(time.Millisecond * 100)
 	}
@@ -141,4 +147,21 @@ func parseRelativeTime(relativeTime string) (time.Time, error) {
 	absoluteTime := currentTime.Add(-time.Duration(value) * duration)
 	fmt.Println(absoluteTime)
 	return absoluteTime, nil
+}
+
+func SendTelegramNotification(not *models.Not) error {
+	initAniClient()
+	payload := strings.NewReader(fmt.Sprintf("{\n\t\"text\":\"\\n‼️New Episode Out‼️\\n\\n------------------\\n\\nAnime:   %s\\n\\nEpisode: %s\\n\\nDate:      %s\\n\\nWatch:   [Link](https://aniwave.to/user/notification/read/%s)\\n\\n------------------\\n\\n✨✨\"\n}",not.Anime,not.Episode,not.Date.Format(time.ANSIC),not.Id))
+	req, err := http.NewRequest(http.MethodPost, "https://api.telegram.org/bot5595086803:AAFvK-4nl8seTk1XxwPOMmKmkyEGyga7Yks/sendMessage?chat_id=988808928&parse_mode=markdown", payload)
+	if err != nil {
+		println(err.Error())
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	_, err = aniClient.Do(req)
+	if err != nil {
+		println(err.Error())
+		return err
+	}
+	return nil
 }

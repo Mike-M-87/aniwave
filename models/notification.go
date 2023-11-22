@@ -7,5 +7,5 @@ type Not struct {
 	Anime   string    `json:"anime"`
 	Episode string    `json:"episode"`
 	Date    time.Time `json:"date"`
-	Done    bool      `json:"done"`
+	Done    bool      `json:"done" default:"false"`
 }
