@@ -74,17 +74,18 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 		return nil, err
 	}
 	fmt.Println("i got resp")
-	for _, v := range resp.Cookies() {
-		if v != nil && v.Name == "session" {
-			fmt.Println("🍪", v.Value)
-			myCookie = v
-		}
-	}
+	// for _, v := range resp.Cookies() {
+	// 	if v != nil && v.Name == "session" {
+	// 		fmt.Println("🍪", v.Value)
+	// 		myCookie = v
+	// 	}
+	// }
 	defer resp.Body.Close()
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("🟡",responseBody)
 	reId := regexp.MustCompile(`<a data-id="(\d+)"`)
 	notIds := reId.FindAllString(string(responseBody), -1)
 
