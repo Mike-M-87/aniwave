@@ -4,6 +4,8 @@ import (
 	"aniwave/models"
 	"aniwave/structure"
 	"aniwave/utils"
+	"os"
+
 	// "bytes"
 	// "encoding/json"
 	"encoding/xml"
@@ -27,10 +29,10 @@ func initAniClient() {
 		aniClient = &http.Client{}
 		myCookie = &http.Cookie{
 			Name:       "session",
-			Value:      "HJhP2ILDSQkIL0BIM0iCAP8EjWzRFnCrfYvGpp7e",
+			Value:      "Z1ysko63MAMBzQQbQ27TlPnqfttf2oELYJv9GO0K",
 			Domain:     "aniwave.to",
 			Path:       "/",
-			RawExpires: "2023-11-21T12:03:40.351Z",
+			RawExpires: "2023-11-22T16:03:40.351Z",
 		}
 	}
 }
@@ -42,7 +44,6 @@ func FetchAllNotifications() {
 		if err != nil || len(nots) <= 0 {
 			continue
 		}
-
 		for _, v := range nots {
 			err = utils.DB.Create(v).Error
 			if err == nil {
@@ -51,9 +52,8 @@ func FetchAllNotifications() {
 				return
 			}
 		}
-
 		page++
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Second)
 	}
 }
 
@@ -95,7 +95,6 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 		content := infoDivXml.Div.Span
 		date, err := parseRelativeTime(infoDivXml.Time)
 		if err != nil {
-			println(err)
 			continue
 		}
 		nots[i] = &models.Not{
@@ -145,22 +144,19 @@ func parseRelativeTime(relativeTime string) (time.Time, error) {
 	currentTime := time.Now()
 	// Calculate the absolute time by subtracting the duration from the current time
 	absoluteTime := currentTime.Add(-time.Duration(value) * duration)
-	fmt.Println(absoluteTime)
 	return absoluteTime, nil
 }
 
 func SendTelegramNotification(not *models.Not) error {
 	initAniClient()
-	payload := strings.NewReader(fmt.Sprintf("{\n\t\"text\":\"\\n‼️New Episode Out‼️\\n\\n------------------\\n\\nAnime:   %s\\n\\nEpisode: %s\\n\\nDate:      %s\\n\\nWatch:   [Link](https://aniwave.to/user/notification/read/%s)\\n\\n------------------\\n\\n✨✨\"\n}",not.Anime,not.Episode,not.Date.Format(time.ANSIC),not.Id))
-	req, err := http.NewRequest(http.MethodPost, "https://api.telegram.org/bot5595086803:AAFvK-4nl8seTk1XxwPOMmKmkyEGyga7Yks/sendMessage?chat_id=988808928&parse_mode=markdown", payload)
+	payload := strings.NewReader(fmt.Sprintf("{\n\t\"text\":\"\\n‼️New Episode Out‼️\\n\\n------------------\\n\\nAnime:   %s\\n\\nEpisode: %s\\n\\nDate:      %s\\n\\nWatch:   [Link](https://aniwave.to/user/notification/read/%s)\\n\\n------------------\\n\\n✨✨\"\n}", not.Anime, not.Episode, not.Date.Format(time.ANSIC), not.Id))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage?chat_id=-1001738363628&parse_mode=markdown", os.Getenv("TELBOT_KEY")), payload)
 	if err != nil {
-		println(err.Error())
 		return err
 	}
 	req.Header.Add("Content-Type", "application/json")
 	_, err = aniClient.Do(req)
 	if err != nil {
-		println(err.Error())
 		return err
 	}
 	return nil
