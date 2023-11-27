@@ -78,6 +78,7 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	if err != nil {
 		return nil, err
 	}
+	WriteToFile(string(responseBody))
 	reId := regexp.MustCompile(`<a data-id="(\d+)"`)
 	notIds := reId.FindAllString(string(responseBody), -1)
 
@@ -117,7 +118,6 @@ func WriteToFile(s string) {
 		return
 	}
 }
-
 
 func extractNotID(s string) string {
 	re := regexp.MustCompile(`(\d+)`)
