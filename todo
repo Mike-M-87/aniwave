@@ -1,0 +1,8 @@
+When you want to deploy a new service
+Use docker files from https://github.com/Kahono0/start-service 
+Create a database
+docker compose up -d
+write the nginx configurations at /etc/nginx/sites-available/<service_name> (You can copy from other files in the same directory)
+Sym link sudo ln -s /etc/nginx/sites-available/<service_name> /etc/nginx/sites-enabled
+sudo nginx -t 
+sudo systemctl restart nginx

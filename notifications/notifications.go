@@ -29,7 +29,7 @@ func initAniClient() {
 		aniClient = &http.Client{}
 		myCookie = &http.Cookie{
 			Name:       "session",
-			Value:      "Z1ysko63MAMBzQQbQ27TlPnqfttf2oELYJv9GO0K",
+			Value:      "9fKFACrilNTEpNpaOZarHm1joSMld3zLT7BhQ27w",
 			Domain:     "aniwave.to",
 			Path:       "/",
 			RawExpires: "2023-11-22T16:03:40.351Z",
@@ -41,9 +41,7 @@ func FetchAllNotifications() {
 	var page int = 1
 	for i := page; i <= page; i++ {
 		nots, err := GetNotifications(i)
-		fmt.Println("👀", len(nots))
 		if err != nil || len(nots) <= 0 {
-			fmt.Println("❌ Error getting nots", err)
 			continue
 		}
 		for _, v := range nots {
@@ -72,7 +70,6 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	}
 	for _, v := range resp.Cookies() {
 		if v != nil && v.Name == "session" {
-			fmt.Println("🍪", v.Value)
 			myCookie = v
 		}
 	}
@@ -81,7 +78,6 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("🟡",string(responseBody))
 	reId := regexp.MustCompile(`<a data-id="(\d+)"`)
 	notIds := reId.FindAllString(string(responseBody), -1)
 
@@ -110,6 +106,18 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	}
 	return nots, nil
 }
+
+func WriteToFile(s string) {
+	f, err := os.OpenFile("resp.html", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return
+	}
+	_, err = f.WriteString(s)
+	if err != nil {
+		return
+	}
+}
+
 
 func extractNotID(s string) string {
 	re := regexp.MustCompile(`(\d+)`)

@@ -3,11 +3,12 @@ package main
 import (
 	"aniwave/notifications"
 	"aniwave/utils"
-	"os"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
+	"os"
 )
 
 var defaultPort = "8082"
@@ -34,7 +35,9 @@ func main() {
 	app.Static("/", "./index.html")
 	app.Post("/done", notifications.ChangeDone)
 	app.Get("/nots", notifications.DisplayNotifications)
-	app.Get("/check", notifications.CheckNotifications)
+	app.Get("/cookie", notifications.ChangeCookie)
+
+	initCron()
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(418).JSON(&fiber.Map{
@@ -43,4 +46,13 @@ func main() {
 	})
 
 	log.Fatal().Err(app.Listen(":" + port))
+}
+
+func initCron() {
+	c := cron.New()
+	_, err := c.AddFunc("@hourly", notifications.FetchAllNotifications)
+	if err != nil {
+		return
+	}
+	c.Start()
 }

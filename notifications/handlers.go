@@ -6,10 +6,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func CheckNotifications(c *fiber.Ctx) error {
-	go FetchAllNotifications()
+func ChangeCookie(c *fiber.Ctx) error {
+	if myCookie == nil {
+		return c.SendStatus(fiber.StatusNotAcceptable)
+	}
+	myCookie.Value = c.Query("cookie")
 	return c.SendStatus(fiber.StatusAccepted)
 }
+
 func DisplayNotifications(c *fiber.Ctx) error {
 	var nots []models.Not
 	err := utils.DB.Find(&nots).Error
