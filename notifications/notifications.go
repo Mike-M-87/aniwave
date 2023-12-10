@@ -29,7 +29,7 @@ func initAniClient() {
 		aniClient = &http.Client{}
 		myCookie = &http.Cookie{
 			Name:       "session",
-			Value:      "9fKFACrilNTEpNpaOZarHm1joSMld3zLT7BhQ27w",
+			Value:      os.Getenv("ANIWAVE_COOKIE"),
 			Domain:     "aniwave.to",
 			Path:       "/",
 			RawExpires: "2023-11-22T16:03:40.351Z",
@@ -73,6 +73,7 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 	for _, v := range resp.Cookies() {
 		if v != nil && v.Name == "session" {
 			myCookie = v
+			fmt.Println(v.Value)
 		}
 	}
 	defer resp.Body.Close()
