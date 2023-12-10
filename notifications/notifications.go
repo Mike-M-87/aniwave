@@ -99,7 +99,7 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 		content := infoDivXml.Div.Span
 		date, err := parseRelativeTime(infoDivXml.Time)
 		if err != nil {
-			continue
+			fmt.Println("parse time err",date)
 		}
 		nots[i] = &models.Not{
 			Id:      extractNotID(notIds[i]),
