@@ -3,10 +3,13 @@ package notifications
 import (
 	"aniwave/models"
 	"aniwave/utils"
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func ChangeCookie(c *fiber.Ctx) error {
+	fmt.Println(c.Query("cookie"))
 	if myCookie == nil {
 		return c.SendStatus(fiber.StatusNotAcceptable)
 	}
@@ -20,6 +23,7 @@ func DisplayNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Could not find notifications")
 	}
+	go FetchAllNotifications()
 	return c.JSON(nots)
 }
 
