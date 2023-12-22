@@ -19,10 +19,23 @@ import (
 )
 
 var (
-	myCookie          *http.Cookie
-	aniClient         *http.Client
-	duplicateKeyError = `ERROR: duplicate key value violates unique constraint "nots_pkey" (SQLSTATE 23505)`
+	myCookie  *http.Cookie
+	aniClient *http.Client
+	unitMap   = map[string]time.Duration{
+		"week":    7 * 24 * time.Hour,
+		"weeks":   7 * 24 * time.Hour,
+		"day":     24 * time.Hour,
+		"days":    24 * time.Hour,
+		"hour":    time.Hour,
+		"hours":   time.Hour,
+		"minute":  time.Minute,
+		"minutes": time.Minute,
+		"second":  time.Second,
+		"seconds": time.Second,
+	}
 )
+
+const duplicateKeyError = `ERROR: duplicate key value violates unique constraint "nots_pkey" (SQLSTATE 23505)`
 
 func initAniClient() {
 	if aniClient == nil || myCookie == nil {
@@ -38,6 +51,7 @@ func initAniClient() {
 }
 
 func FetchAllNotifications() {
+	initAniClient()
 	var page int = 1
 	for i := page; i <= page; i++ {
 		nots, err := GetNotifications(i)
@@ -48,7 +62,8 @@ func FetchAllNotifications() {
 		for _, v := range nots {
 			err = utils.DB.Create(v).Error
 			if err == nil {
-				SendTelegramNotification(v)
+				// SendTelegramNotification(v)
+				fmt.Println(utils.AsPrettyJson(v))
 				time.Sleep(time.Second)
 			} else if err != nil && err.Error() == duplicateKeyError {
 				return
@@ -60,7 +75,6 @@ func FetchAllNotifications() {
 }
 
 func GetNotifications(currentPage int) ([]*models.Not, error) {
-	initAniClient()
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://aniwave.to/user/notification?page=%d", currentPage), nil)
 	if err != nil {
 		return nil, err
@@ -99,7 +113,7 @@ func GetNotifications(currentPage int) ([]*models.Not, error) {
 		content := infoDivXml.Div.Span
 		date, err := parseRelativeTime(infoDivXml.Time)
 		if err != nil {
-			fmt.Println("parse time err",date)
+			fmt.Println("parse time err", date)
 		}
 		nots[i] = &models.Not{
 			Id:      extractNotID(notIds[i]),
@@ -140,24 +154,19 @@ func parseRelativeTime(relativeTime string) (time.Time, error) {
 	}
 	unit := parts[1]
 	// Map relative time units to their respective durations
-	unitMap := map[string]time.Duration{
-		"week":    7 * 24 * time.Hour,
-		"weeks":   7 * 24 * time.Hour,
-		"day":     24 * time.Hour,
-		"days":    24 * time.Hour,
-		"hour":    time.Hour,
-		"hours":   time.Hour,
-		"minute":  time.Minute,
-		"minutes": time.Minute,
-		"second":  time.Second,
-		"seconds": time.Second,
-	}
+
 	duration, exists := unitMap[unit]
 	if !exists {
 		return time.Time{}, fmt.Errorf("unsupported time unit")
 	}
-	currentTime := time.Now()
-	// Calculate the absolute time by subtracting the duration from the current time
+	var currentTime time.Time
+	location, err := time.LoadLocation("Africa/Nairobi")
+	if err != nil {
+		fmt.Println("Error loading location:", err)
+		currentTime = time.Now()
+	} else {
+		currentTime = time.Now().In(location)
+	}
 	absoluteTime := currentTime.Add(-time.Duration(value) * duration)
 	return absoluteTime, nil
 }

@@ -3,12 +3,12 @@ package main
 import (
 	"aniwave/notifications"
 	"aniwave/utils"
+	"log"
+	"os"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
-	"github.com/rs/zerolog/log"
-	"os"
 )
 
 var defaultPort = "8082"
@@ -16,7 +16,7 @@ var defaultPort = "8082"
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Panic().Err(err)
+		log.Panic(err)
 	}
 	utils.InitialiseDB()
 
@@ -45,7 +45,8 @@ func main() {
 		}) // => 418 "I am a tepot"
 	})
 
-	log.Fatal().Err(app.Listen(":" + port))
+
+	log.Fatal(app.Listen(":" + port))
 }
 
 func initCron() {

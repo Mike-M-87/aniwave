@@ -19,7 +19,7 @@ func ChangeCookie(c *fiber.Ctx) error {
 
 func DisplayNotifications(c *fiber.Ctx) error {
 	var nots []models.Not
-	err := utils.DB.Find(&nots).Error
+	err := utils.DB.Limit(10).Find(&nots).Error
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Could not find notifications")
 	}
