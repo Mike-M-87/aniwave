@@ -62,8 +62,7 @@ func FetchAllNotifications() {
 		for _, v := range nots {
 			err = utils.DB.Create(v).Error
 			if err == nil {
-				// SendTelegramNotification(v)
-				fmt.Println(utils.AsPrettyJson(v))
+				SendTelegramNotification(v)
 				time.Sleep(time.Second)
 			} else if err != nil && err.Error() == duplicateKeyError {
 				return
